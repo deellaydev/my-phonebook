@@ -5,17 +5,16 @@ import { IGroup } from '../../customers/dto/Customers';
 import { deleteGroup, getAllGroups } from '../groupsAsyncActions';
 import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 import { generateGroupsColumns } from '../helpers/generateGroupsColumns';
-import { Modal, Table, Typography } from 'antd';
+import { Modal, Spin, Table, Typography } from 'antd';
 import styled from 'styled-components';
 import { getGroupsEntities } from '../groupsSelectors';
-
-document.cookie = 'x1=x2';
 
 export const Groups = () => {
   const [visibleDrawer, setVisibleDrawer] = useState<boolean>(false);
   const [groupForUpdate, setGroupForUpdate] = useState<IGroup | null>(null);
 
   const allGroups = useAppSelector(getGroupsEntities);
+  const { isLoading } = useAppSelector((state) => state.GroupReducer);
 
   const dispatch = useAppDispatch();
 
@@ -30,16 +29,27 @@ export const Groups = () => {
     });
   };
 
+  const handleUpdateGroup = (group: IGroup) => {
+    setGroupForUpdate(group);
+    setVisibleDrawer(true);
+  };
+
   useEffect(() => {
     dispatch(getAllGroups());
   }, []);
 
-  const columns = generateGroupsColumns({ showDeleteModal });
+  const columns = generateGroupsColumns({ showDeleteModal, handleUpdateGroup });
 
   return (
     <Fragment>
+      {isLoading && <SpinStyled size={'large'} />}
       <ComponentHeader title={'Группы'} callback={() => setVisibleDrawer(true)} />
-      <GroupsDrawer visible={visibleDrawer} setVisible={setVisibleDrawer} groupForUpdate={groupForUpdate} />
+      <GroupsDrawer
+        visible={visibleDrawer}
+        setVisible={setVisibleDrawer}
+        groupForUpdate={groupForUpdate}
+        setGroupForUpdate={setGroupForUpdate}
+      />
       <TableWrapper>
         <Table columns={columns} dataSource={allGroups} />
       </TableWrapper>
@@ -49,4 +59,9 @@ export const Groups = () => {
 
 const TableWrapper = styled.div`
   padding: 50px;
+`;
+const SpinStyled = styled(Spin)`
+  position: absolute;
+  right: 50%;
+  top: 25px;
 `;

@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { Button, Collapse, DatePicker, Divider, Drawer, Form, InputNumber, Select } from 'antd';
 import { ICustomer } from '../dto/Customers';
 import { useForm } from 'antd/es/form/Form';
@@ -11,6 +11,11 @@ import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 import { groupAdapter } from '../../groups/groupSlice';
 import { typeGlobalState } from '../../../store/store';
 import { getAllGroups } from '../../groups/groupsAsyncActions';
+import { getAllCategories } from '../../categories/categoriesAsyncActions';
+import { getGroupsEntities } from '../../groups/groupsSelectors';
+import { getCategoriesEntities } from '../../categories/categoriesSelectors';
+import { addNewCustomer } from '../customersAsyncActions';
+import moment from 'moment';
 
 const { Panel } = Collapse;
 
@@ -36,7 +41,9 @@ interface IProps {
 }
 
 export const CustomersDrawer: FC<IProps> = ({ visible, setVisible, customerForUpdate }) => {
-  const allGroups = useAppSelector(groupAdapter.getSelectors((state: typeGlobalState) => state.GroupReducer).selectAll);
+  const allGroups = useAppSelector(getGroupsEntities);
+  const allCategories = useAppSelector(getCategoriesEntities);
+  const [values, setValues] = useState<ICustomer | null>(null);
 
   const [form] = useForm();
   const dispatch = useAppDispatch();
@@ -45,8 +52,13 @@ export const CustomersDrawer: FC<IProps> = ({ visible, setVisible, customerForUp
     return { label: group.name, value: group.id };
   });
 
+  const categoriesOptions = allCategories.map((category) => {
+    return { label: category.name, value: category.id };
+  });
+
   useEffect(() => {
     dispatch(getAllGroups());
+    dispatch(getAllCategories());
   }, []);
 
   const handleClose = () => {
@@ -54,7 +66,7 @@ export const CustomersDrawer: FC<IProps> = ({ visible, setVisible, customerForUp
   };
 
   const handleSubmit = () => {
-    form.validateFields().then((values) => console.log(values));
+    values && dispatch(addNewCustomer(values));
   };
 
   return (
@@ -64,31 +76,40 @@ export const CustomersDrawer: FC<IProps> = ({ visible, setVisible, customerForUp
       title={customerForUpdate ? 'Редактирование абонента' : 'Создание абонента'}
       footer={<DrawerFooter cancelCallback={handleClose} saveCallback={handleSubmit} />}
     >
-      <Form form={form} layout={'vertical'} name={'customer'}>
-        <Form.Item name={'firstName'} label={'Имя'}>
+      <Form form={form} layout={'vertical'} name={'customer'} onValuesChange={() => setValues(form.getFieldsValue())}>
+        <Form.Item name={'firstName'} label={'Имя'} initialValue={customerForUpdate?.firstName}>
           <Input showCount maxLength={20} />
         </Form.Item>
-        <Form.Item name={'secondName'} label={'Фамилия'}>
+        <Form.Item name={'middleName'} label={'Фамилия'} initialValue={customerForUpdate?.middleName}>
           <Input showCount maxLength={20} />
         </Form.Item>
-        <Form.Item name={'middleName'} label={'Отчество'}>
+        <Form.Item name={'lastName'} label={'Отчество'} initialValue={customerForUpdate?.lastName}>
           <Input showCount maxLength={20} />
         </Form.Item>
-        <Form.Item name={'groups'} label={'Группы'}>
+        <Form.Item name={'groupIds'} label={'Группы'} initialValue={customerForUpdate?.groups.map((group) => group.id)}>
           <Select mode={'multiple'} options={groupsOptions} />
         </Form.Item>
-        <Form.List name='phoneNumbers'>
+        <Form.List name='phoneNumbers' initialValue={customerForUpdate?.phones}>
           {(fields, { add, remove }) => {
             return (
               <>
                 {fields.map((field, index) => (
                   <Collapse key={index}>
-                    <PanelStyled key={index} header={'Номера абонента'} extra={<DeleteOutlinedStyled onClick={() => remove(field.name)} />}>
+                    <PanelStyled
+                      key={index}
+                      header={values?.phones?.[index]?.phoneNumber ? values?.phones[index].phoneNumber : 'Номера абонента'}
+                      extra={<DeleteOutlinedStyled onClick={() => remove(field.name)} />}
+                    >
                       <Form.Item {...field} name={[field.name, 'phoneNumber']} label={'Номер телефона'}>
                         <Input showCount />
                       </Form.Item>
-                      <Form.Item {...field} name={[field.name, 'phoneCategoryId']} label={'Категория'}>
-                        <Select options={[{ label: 'test', value: 'asd' }]} />
+                      <Form.Item
+                        {...field}
+                        name={[field.name, 'phoneCategoryId']}
+                        label={'Категория'}
+                        initialValue={customerForUpdate?.phones[index].category.id}
+                      >
+                        <Select options={categoriesOptions} />
                       </Form.Item>
                       <Divider />
                     </PanelStyled>
@@ -103,32 +124,37 @@ export const CustomersDrawer: FC<IProps> = ({ visible, setVisible, customerForUp
             );
           }}
         </Form.List>
-        <Form.Item name={['address', 'region']} label={'Регион'}>
+        <Form.Item name={['address', 'region']} label={'Регион'} initialValue={customerForUpdate?.address.region}>
           <Input />
         </Form.Item>
-        <Form.Item name={['address', 'city']} label={'Город'}>
+        <Form.Item name={['address', 'city']} label={'Город'} initialValue={customerForUpdate?.address.city}>
           <Input />
         </Form.Item>
-        <Form.Item name={['address', 'street']} label={'Улица'}>
+        <Form.Item name={['address', 'street']} label={'Улица'} initialValue={customerForUpdate?.address.street}>
           <Input />
         </Form.Item>
-        <Form.Item name={['address', 'block']} label={'Квартал'}>
+        <Form.Item name={['address', 'block']} label={'Квартал'} initialValue={customerForUpdate?.address.block}>
           <Input />
         </Form.Item>
         <ItemsWrapper>
-          <Form.Item name={['address', 'house']} label={'Дом'}>
+          <Form.Item name={['address', 'house']} label={'Дом'} initialValue={customerForUpdate?.address.house}>
             <StyledInputNumber min={0} />
           </Form.Item>
-          <Form.Item name={['address', 'flat']} label={'Подъезд'}>
+          <Form.Item name={['address', 'flat']} label={'Подъезд'} initialValue={customerForUpdate?.address.flat}>
             <StyledInputNumber min={0} />
           </Form.Item>
         </ItemsWrapper>
-        <Form.Item name={'gender'} label={'Пол'}>
+        <Form.Item name={'gender'} label={'Пол'} initialValue={customerForUpdate?.gender}>
           <Select options={genderOptions} />
         </Form.Item>
-        <LabelStyled>Дата рождения</LabelStyled>
-        <DatePickerStyled locale={locale} />
-        <Form.Item name={'email'} label={'Почта'}>
+        <Form.Item
+          name={'dateOfBirth'}
+          label={'Дата рождения'}
+          initialValue={customerForUpdate?.dateOfBirth ? moment(customerForUpdate?.dateOfBirth) : undefined}
+        >
+          <DatePickerStyled locale={locale} />
+        </Form.Item>
+        <Form.Item name={'email'} label={'Почта'} initialValue={customerForUpdate?.email}>
           <Input />
         </Form.Item>
       </Form>
@@ -146,12 +172,8 @@ const ButtonStyled = styled(Button)`
 const PanelStyled = styled(Panel)`
   margin-bottom: 15px;
 `;
-const LabelStyled = styled.p`
-  margin-bottom: 10px;
-`;
 const DatePickerStyled = styled(DatePicker)`
   width: 100%;
-  margin-bottom: 10px;
 `;
 const ItemsWrapper = styled.div`
   display: flex;

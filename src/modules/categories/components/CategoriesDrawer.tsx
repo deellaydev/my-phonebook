@@ -4,38 +4,38 @@ import { Drawer, Form, Input } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import { DrawerFooter } from '../../../common/components/DrawerFooter';
 import { useAppDispatch } from '../../../hooks/redux';
-import { addNewGroup, updateGroup } from '../groupsAsyncActions';
 import { isEqual, omit } from 'lodash';
+import { addNewCategory, updateCategory } from '../categoriesAsyncActions';
 
 interface IProps {
   visible: boolean;
   setVisible: (visible: boolean) => void;
-  groupForUpdate: IGroup | null;
-  setGroupForUpdate: Dispatch<SetStateAction<IGroup | null>>;
+  categoryForUpdate: IGroup | null;
+  setCategoryForUpdate: Dispatch<SetStateAction<IGroup | null>>;
 }
 
-export const GroupsDrawer: FC<IProps> = ({ visible, setVisible, groupForUpdate, setGroupForUpdate }) => {
+export const CategoriesDrawer: FC<IProps> = ({ visible, setVisible, categoryForUpdate, setCategoryForUpdate }) => {
   const [form] = useForm<IGroup>();
   const dispatch = useAppDispatch();
 
   const handleClose = () => {
     setVisible(false);
-    setGroupForUpdate(null);
+    setCategoryForUpdate(null);
     form.resetFields();
   };
 
   useEffect(() => {
     form.resetFields();
-  }, [groupForUpdate]);
+  }, [categoryForUpdate]);
 
   const handleSubmit = () => {
-    if (!groupForUpdate) {
-      dispatch(addNewGroup(form.getFieldsValue())).then(() => setVisible(false));
-    } else if (!isEqual(omit(groupForUpdate, 'id'), form.getFieldsValue())) {
+    if (!categoryForUpdate) {
+      dispatch(addNewCategory(form.getFieldsValue())).then(() => setVisible(false));
+    } else if (!isEqual(omit(categoryForUpdate, 'id'), form.getFieldsValue())) {
       dispatch(
-        updateGroup({
+        updateCategory({
           ...form.getFieldsValue(),
-          id: groupForUpdate.id,
+          id: categoryForUpdate.id,
         }),
       ).then(() => setVisible(false));
     } else {
@@ -48,11 +48,11 @@ export const GroupsDrawer: FC<IProps> = ({ visible, setVisible, groupForUpdate, 
     <Drawer
       open={visible}
       onClose={handleClose}
-      title={groupForUpdate ? 'Редактирование группы' : 'Создание группы'}
+      title={categoryForUpdate ? 'Редактирование категории' : 'Создание категории'}
       footer={<DrawerFooter cancelCallback={handleClose} saveCallback={handleSubmit} />}
     >
-      <Form name={'Group'} form={form} layout={'vertical'}>
-        <Form.Item name={'name'} label={'Имя группы'} initialValue={groupForUpdate?.name}>
+      <Form name={'phoneCategory'} form={form} layout={'vertical'}>
+        <Form.Item name={'name'} label={'Имя категории'} initialValue={categoryForUpdate?.name}>
           <Input />
         </Form.Item>
       </Form>

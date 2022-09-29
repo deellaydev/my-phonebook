@@ -9,6 +9,7 @@ export interface ICustomer {
   email: string;
   gender: 'None' | 'Male' | 'Female';
   imageUrl: string;
+  dateOfBirth: string;
 }
 
 interface IPhone {

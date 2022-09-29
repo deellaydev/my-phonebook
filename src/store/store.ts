@@ -1,8 +1,12 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import GroupReducer from '../modules/groups/groupSlice';
+import CategoryReducer from '../modules/categories/categoriesSlice';
+import CustomersReducer from '../modules/customers/customersSlice';
 
 const rootReducer = combineReducers({
   GroupReducer,
+  CategoryReducer,
+  CustomersReducer,
 });
 
 export const setupStore = () => {

@@ -9,6 +9,12 @@ export const getAllGroups = createAsyncThunk<IGroup[]>('getAllGroups', async () 
 export const addNewGroup = createAsyncThunk<IGroup, IGroup>('addNewGroup', async (group) => {
   return await new GroupsAPI().saveGroup(JSON.stringify(group));
 });
-export const deleteGroup = createAsyncThunk<IGroup, string>('deleteGroup', async (id) => {
-  return await new GroupsAPI().deleteGroup(id);
+
+export const deleteGroup = createAsyncThunk<string, string>('deleteGroup', async (id) => {
+  await new GroupsAPI().deleteGroup(id);
+  return id;
+});
+
+export const updateGroup = createAsyncThunk<IGroup, IGroup>('updateGroup', async (group) => {
+  return await new GroupsAPI().saveGroup(JSON.stringify(group));
 });

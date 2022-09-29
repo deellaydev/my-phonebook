@@ -5,10 +5,10 @@ import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 interface IHandlers {
   showDeleteModal: (id: string) => void;
-  handleUpdateGroup: (group: IGroup) => void;
+  handleUpdateCategory: (group: IGroup) => void;
 }
 
-export const generateGroupsColumns = (handlers: IHandlers): ColumnsType<IGroup> => {
+export const generateCategoriesColumns = (handlers: IHandlers): ColumnsType<IGroup> => {
   const idColumn: ColumnType<IGroup> = {
     title: 'ID группы',
     dataIndex: 'id',
@@ -17,7 +17,7 @@ export const generateGroupsColumns = (handlers: IHandlers): ColumnsType<IGroup> 
   };
 
   const nameColumn: ColumnType<IGroup> = {
-    title: 'Название группы',
+    title: 'Название категории',
     dataIndex: 'name',
     width: '60%',
     ellipsis: true,
@@ -32,7 +32,7 @@ export const generateGroupsColumns = (handlers: IHandlers): ColumnsType<IGroup> 
     fixed: 'right',
     render: (_, entity) => (
       <ActionsWrapper>
-        <EditOutlinedStyled onClick={() => handlers.handleUpdateGroup(entity)} />
+        <EditOutlinedStyled onClick={() => handlers.handleUpdateCategory(entity)} />
         <DeleteOutlinedStyled onClick={() => handlers.showDeleteModal(entity.id)} />
       </ActionsWrapper>
     ),
