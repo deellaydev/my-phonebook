@@ -12,7 +12,7 @@ export interface ICustomer {
   dateOfBirth: string;
 }
 
-interface IPhone {
+export interface IPhone {
   phoneNumber: string;
   category: IGroup;
 }

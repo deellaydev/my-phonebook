@@ -4,11 +4,12 @@ import styled from 'styled-components';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Tag, Typography } from 'antd';
 import { useSelector } from 'react-redux';
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 
 interface IHandlers {
   showDeleteModal: (id: string) => void;
   handleUpdateCustomer: (customer: ICustomer) => void;
+  setCustomer: Dispatch<SetStateAction<ICustomer | null>>;
 }
 
 export const generateCustomersColumns = (handlers: IHandlers): ColumnsType<ICustomer> => {
@@ -24,7 +25,7 @@ export const generateCustomersColumns = (handlers: IHandlers): ColumnsType<ICust
     width: '40%',
     ellipsis: true,
     render: (_, entity) => (
-      <Typography.Link>
+      <Typography.Link onClick={() => handlers.setCustomer(entity)}>
         {entity.firstName} {entity.middleName} {entity.lastName}
       </Typography.Link>
     ),

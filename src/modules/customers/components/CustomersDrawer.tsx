@@ -1,6 +1,6 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { Dispatch, FC, SetStateAction, useEffect, useState } from 'react';
 import { Button, Collapse, DatePicker, Divider, Drawer, Form, InputNumber, Select } from 'antd';
-import { ICustomer } from '../dto/Customers';
+import { ICustomer, IGroup, IPhone } from '../dto/Customers';
 import { useForm } from 'antd/es/form/Form';
 import Input from 'antd/es/input/Input';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
@@ -14,8 +14,9 @@ import { getAllGroups } from '../../groups/groupsAsyncActions';
 import { getAllCategories } from '../../categories/categoriesAsyncActions';
 import { getGroupsEntities } from '../../groups/groupsSelectors';
 import { getCategoriesEntities } from '../../categories/categoriesSelectors';
-import { addNewCustomer } from '../customersAsyncActions';
+import { addNewCustomer, updateCustomer } from '../customersAsyncActions';
 import moment from 'moment';
+import { isEqual, omit } from 'lodash';
 
 const { Panel } = Collapse;
 
@@ -38,9 +39,10 @@ interface IProps {
   visible: boolean;
   setVisible: (visible: boolean) => void;
   customerForUpdate: ICustomer | null;
+  setCustomerForUpdate: Dispatch<SetStateAction<ICustomer | null>>;
 }
 
-export const CustomersDrawer: FC<IProps> = ({ visible, setVisible, customerForUpdate }) => {
+export const CustomersDrawer: FC<IProps> = ({ visible, setVisible, customerForUpdate, setCustomerForUpdate }) => {
   const allGroups = useAppSelector(getGroupsEntities);
   const allCategories = useAppSelector(getCategoriesEntities);
   const [values, setValues] = useState<ICustomer | null>(null);
@@ -62,11 +64,50 @@ export const CustomersDrawer: FC<IProps> = ({ visible, setVisible, customerForUp
   }, []);
 
   const handleClose = () => {
+    setCustomerForUpdate(null);
     setVisible(false);
+    form.resetFields();
   };
 
+  useEffect(() => {
+    form.resetFields();
+  }, [customerForUpdate]);
+
   const handleSubmit = () => {
-    values && dispatch(addNewCustomer(values));
+    if (!customerForUpdate && values) {
+      dispatch(addNewCustomer(values)).then(() => handleClose());
+    } else if (
+      customerForUpdate &&
+      !isEqual(
+        {
+          ...omit(customerForUpdate, 'id', 'groups', 'imageUrl'),
+          groupIds: customerForUpdate.groups.map((group) => group.id),
+        },
+        {
+          ...omit(form.getFieldsValue(), 'dateOfBirth', 'phoneNumbers'),
+          dateOfBirth: form.getFieldValue('dateOfBirth')?._i,
+          phones: form.getFieldValue('phoneNumbers'),
+        },
+      )
+    ) {
+      console.log(form.getFieldsValue());
+      dispatch(
+        updateCustomer({
+          ...form.getFieldsValue(),
+          phoneNumbers: form.getFieldValue('phoneNumbers').map((phone: IPhone) => {
+            return {
+              phoneNumber: phone.phoneNumber,
+              phoneCategoryId: phone.category.id,
+            };
+          }),
+          id: customerForUpdate.id,
+        }),
+      ).then(() => {
+        handleClose();
+      });
+    } else {
+      handleClose();
+    }
   };
 
   return (

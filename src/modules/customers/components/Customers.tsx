@@ -8,10 +8,12 @@ import { deleteCustomer, getAllCustomers } from '../customersAsyncActions';
 import { useAppDispatch, useAppSelector } from '../../../hooks/redux';
 import { getCustomersEntities } from '../customersSelectors';
 import styled from 'styled-components';
+import { CustomerDescription } from './CustomerDescription';
 
 export const Customers = () => {
   const [visibleDrawer, setVisibleDrawer] = useState<boolean>(false);
   const [customerForUpdate, setCustomerForUpdate] = useState<ICustomer | null>(null);
+  const [customerForDescription, setCustomerForDescription] = useState<ICustomer | null>(null);
 
   const allCustomers = useAppSelector(getCustomersEntities);
   const { isLoading } = useAppSelector((state) => state.CustomersReducer);
@@ -38,13 +40,19 @@ export const Customers = () => {
     setVisibleDrawer(true);
   };
 
-  const columns = generateCustomersColumns({ showDeleteModal, handleUpdateCustomer });
+  const columns = generateCustomersColumns({ showDeleteModal, handleUpdateCustomer, setCustomer: setCustomerForDescription });
 
   return (
     <Fragment>
       {isLoading && <SpinStyled size={'large'} />}
       <ComponentHeader title={'Абоненты'} callback={() => setVisibleDrawer(true)} />
-      <CustomersDrawer visible={visibleDrawer} setVisible={setVisibleDrawer} customerForUpdate={customerForUpdate} />
+      <CustomersDrawer
+        visible={visibleDrawer}
+        setVisible={setVisibleDrawer}
+        customerForUpdate={customerForUpdate}
+        setCustomerForUpdate={setCustomerForUpdate}
+      />
+      <CustomerDescription customer={customerForDescription} setCustomer={setCustomerForDescription} />
       <TableWrapper>
         <Table columns={columns} dataSource={allCustomers} />
       </TableWrapper>
