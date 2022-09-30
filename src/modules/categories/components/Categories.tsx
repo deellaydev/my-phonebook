@@ -54,7 +54,13 @@ export const Categories = () => {
         setCategoryForUpdate={setCategoryForUpdate}
       />
       <TableWrapper>
-        <Table columns={columns} dataSource={allCategories} />
+        <Table
+          columns={columns}
+          dataSource={allCategories}
+          pagination={{
+            pageSize: 10,
+          }}
+        />
       </TableWrapper>
     </Fragment>
   );

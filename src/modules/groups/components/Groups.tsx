@@ -51,7 +51,13 @@ export const Groups = () => {
         setGroupForUpdate={setGroupForUpdate}
       />
       <TableWrapper>
-        <Table columns={columns} dataSource={allGroups} />
+        <Table
+          columns={columns}
+          dataSource={allGroups}
+          pagination={{
+            pageSize: 10,
+          }}
+        />
       </TableWrapper>
     </Fragment>
   );

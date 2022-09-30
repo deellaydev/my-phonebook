@@ -54,7 +54,13 @@ export const Customers = () => {
       />
       <CustomerDescription customer={customerForDescription} setCustomer={setCustomerForDescription} />
       <TableWrapper>
-        <Table columns={columns} dataSource={allCustomers} />
+        <Table
+          columns={columns}
+          dataSource={allCustomers}
+          pagination={{
+            pageSize: 10,
+          }}
+        />
       </TableWrapper>
     </Fragment>
   );
